@@ -1,45 +1,71 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "inventario.h"
+#include <string.h>
 
-Arreglo_articulos *crearArreglo(int max){
-    Arreglo_articulos*nuevoArreglo;
-    nuevoArreglo=(Arreglo_articulos*)malloc(sizeof(Arreglo_articulos));
-    nuevoArreglo->articulos=(Articulo*)calloc(max,sizeof(Articulo));
-    for(int i=0;i<max;i++){
-        nuevoArreglo->articulos[i].nombre=(char*)calloc(30,sizeof(char));
-    }
+Inventario *crearArreglo(){
+    Inventario*nuevoArreglo;
+    nuevoArreglo=(Inventario*)malloc(sizeof(Inventario));
+    nuevoArreglo->num_departamentos=0;
     return nuevoArreglo;
 }
 
-void insertarArticulo(int indice,int max,Arreglo_articulos *unArreglo){
-    if(indice>=max){
+void crearDepartamento(Inventario*unInventario){
+    Departamento nuevoDepartamento;
+   Departamento* temp = realloc(unInventario->departamentos, (unInventario->num_departamentos + 1) * sizeof(Departamento));
+if (temp == NULL) {
+    printf("Error al asignar memoria para el departamento.\n");
+    return;  // o manejar el error de alguna otra forma
+}
+unInventario->departamentos = temp;
+
+    nuevoDepartamento.nombre_departamento=(char*)malloc(30*sizeof(char));
+    printf("\n Ingrese el nombre del departamento");
+    getchar();
+    fgets(nuevoDepartamento.nombre_departamento, 30, stdin);
+    nuevoDepartamento.nombre_departamento[strcspn(nuevoDepartamento.nombre_departamento, "\n")] = '\0';  // Eliminar el salto de línea
+    printf("\n Ingrese el maximo de articulos del departamento");
+    scanf("%d",&nuevoDepartamento.max_articulos);
+    nuevoDepartamento.articulos = (Articulo*)malloc(nuevoDepartamento.max_articulos*sizeof(Articulo));
+    nuevoDepartamento.num_articulos=0;
+        for(int i=0;i<nuevoDepartamento.max_articulos;i++){
+        nuevoDepartamento.articulos[i].inventario=(int*)calloc(1,sizeof(int));
+        nuevoDepartamento.articulos[i].nombre=(char*)calloc(30,sizeof(char));
+    }
+    unInventario->departamentos[unInventario->num_departamentos]=nuevoDepartamento;
+    unInventario->num_departamentos++;
+}
+
+void insertarArticulo(int indice,int indice_dep,Inventario*unInventario){
+    if(unInventario->departamentos[indice].num_articulos>=unInventario->departamentos[indice].max_articulos){
         printf("\n ERROR: se ha alcanzado el limite de articulos");
     }else{
         printf("\n Ingrese el codigo del articulo");
-        scanf("%d",&unArreglo->articulos[indice].codigo);
+        scanf("%d",&unInventario->departamentos[indice].articulos[indice_dep].codigo);
         printf("\n Ingrese el precio del articulo");
-        scanf("%f",&unArreglo->articulos[indice].precio);
+        scanf("%f",&unInventario->departamentos[indice].articulos[indice_dep].precio);
         printf("\n Ingrese el inventario del articulo");
-        scanf("%d",unArreglo->articulos[indice].inventario);
-        printf("\n Ingrese el nombre del articulo");
-        scanf("%s",unArreglo->articulos[indice].nombre);
+        scanf("%d",unInventario->departamentos[indice].articulos[indice_dep].inventario);
+        printf("\n Ingrese el nombre del articulo: ");
         getchar();
-
+        fgets(unInventario->departamentos[indice].articulos[indice_dep].nombre, 30, stdin);
+        unInventario->departamentos[indice].articulos[indice_dep].nombre[strcspn(unInventario->departamentos[indice].articulos[indice_dep].nombre, "\n")] = '\0';
+        unInventario->departamentos[indice].num_articulos++;
     }
 }
 
-void listarArticulos(int indice, Arreglo_articulos unArreglo) {
+void listarArticulos(int indice,int indice_dep,Inventario*unInventario){
     printf("\n ====ARTICULOS====");
-    for (int i = 0; i < indice; i++) {
-        printf("\n Codigo del articulo: %d", unArreglo.articulos[i].codigo);
-        printf("\n Nombre del articulo: %s", unArreglo.articulos[i].nombre);
-        printf("\n Precio del articulo: %.2f", unArreglo.articulos[i].precio);
-        printf("\n Inventario del articulo: %d",unArreglo.articulos[i].inventario);
+    for(int i=0;i<indice_dep;i++){
+        printf("\n Codigo del articulo: %d",unInventario->departamentos[indice].articulos[i].codigo);
+        printf("\n Nombre del articulo: %s",unInventario->departamentos[indice].articulos[i].nombre);
+        printf("\n Precio del articulo: %f",unInventario->departamentos[indice].articulos[i].precio);
+        printf("\n Inventario del articulo: %i",*unInventario->departamentos[indice].articulos[i].inventario);
         printf("\n\n");
     }
 }
-//funci�n para leer archivos
+
+//función para leer archivos
 void LeerArticulos(Arreglo_articulos *arreglo, int *num_articulos) {
     FILE *dulce = fopen("Dulces.txt", "r");
     if (dulce == NULL) {
